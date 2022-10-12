@@ -14,7 +14,7 @@ module.exports = () => async (ctx) => {
 
         if (ctx.updateType == 'message') {
 
-            let user = await User.find({ id: ctx.from.id }).then(response => response);
+            let user = await User.find({ id: ctx.chat.id }).then(response => response);
 
             if (user.length <= 0) {
                 
@@ -80,7 +80,7 @@ module.exports = () => async (ctx) => {
             );
 
             const userData = {
-                id: ctx.from.id,
+                id: ctx.chat.id,
                 firstName: (ctx.from.first_name == undefined) ? null : ctx.from.first_name,
                 lastName: (ctx.from.last_name == undefined) ? null : ctx.from.last_name,
                 username: (ctx.from.username == undefined) ? null : ctx.from.username,
@@ -93,7 +93,7 @@ module.exports = () => async (ctx) => {
             }
             ctx.session.userData = userData;
             const user = new User(userData);
-            await user.save().then(() => console.log(`${ctx.from.id}: user recorded.`));
+            await user.save().then(() => console.log(`${ctx.chat.id}: user recorded.`));
 
         }
 

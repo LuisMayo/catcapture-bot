@@ -15,7 +15,7 @@ module.exports = () => async (ctx) => {
 
         // Check if data is lost and if so - get it.
         if (ctx.session.userData == undefined) {
-            await User.find({ id: ctx.from.id }).then(response => {
+            await User.find({ id: ctx.chat.id }).then(response => {
                 ctx.session.userData = response[0];
             });
         }
@@ -76,7 +76,7 @@ module.exports = () => async (ctx) => {
             switch (action) {
 
                 case 'language':
-                    User.find({ id: ctx.from.id }).then(response => {
+                    User.find({ id: ctx.chat.id }).then(response => {
 
                         const language = response[0].language;
         
@@ -109,7 +109,7 @@ module.exports = () => async (ctx) => {
                     break;
                 
                 case 'sendPhoto':
-                    User.find({ id: ctx.from.id }).then(response => {
+                    User.find({ id: ctx.chat.id }).then(response => {
 
                         const sendDocumentCondition = response[0].sendDocument;
                         const currentCondition = response[0].sendPhoto; // true = send, false = not send.
@@ -117,7 +117,7 @@ module.exports = () => async (ctx) => {
 
                         if (sendDocumentCondition == false && changeTo == false) return ctx.answerCbQuery(ctx.i18n.t('error.docpic'));
 
-                        User.updateOne({ id: ctx.from.id }, { $set: { sendPhoto: changeTo } }, () => {});
+                        User.updateOne({ id: ctx.chat.id }, { $set: { sendPhoto: changeTo } }, () => {});
                         ctx.session.userData.sendPhoto = changeTo;
         
                         ctx.editMessageText(ctx.i18n.t('service.settings_msg'), {
@@ -162,7 +162,7 @@ module.exports = () => async (ctx) => {
                     break;
 
                 case 'sendDocument':
-                    User.find({ id: ctx.from.id }).then(response => {
+                    User.find({ id: ctx.chat.id }).then(response => {
 
                         const sendPhotoCondition = response[0].sendPhoto;
                         const currentCondition = response[0].sendDocument; // true = send, false = not send.
@@ -170,7 +170,7 @@ module.exports = () => async (ctx) => {
 
                         if (sendPhotoCondition == false && changeTo == false) return ctx.answerCbQuery(ctx.i18n.t('error.docpic'));
 
-                        User.updateOne({ id: ctx.from.id }, { $set: { sendDocument: changeTo } }, () => {});
+                        User.updateOne({ id: ctx.chat.id }, { $set: { sendDocument: changeTo } }, () => {});
                         ctx.session.userData.sendDocument = changeTo;
         
                         ctx.editMessageText(ctx.i18n.t('service.settings_msg'), {
@@ -215,12 +215,12 @@ module.exports = () => async (ctx) => {
                     break;
 
                 case 'fullPage':
-                    User.find({ id: ctx.from.id }).then(response => {
+                    User.find({ id: ctx.chat.id }).then(response => {
 
                         const currentCondition = response[0].fullPage; // true = send, false = not send.
                         const changeTo = (currentCondition) ? false : true;
 
-                        User.updateOne({ id: ctx.from.id }, { $set: { fullPage: changeTo } }, () => {});
+                        User.updateOne({ id: ctx.chat.id }, { $set: { fullPage: changeTo } }, () => {});
                         ctx.session.userData.fullPage = changeTo;
         
                         ctx.editMessageText(ctx.i18n.t('service.settings_msg'), {
@@ -265,12 +265,12 @@ module.exports = () => async (ctx) => {
                     break;
                 
                 case 'setDevice':
-                    User.find({ id: ctx.from.id }).then(response => {
+                    User.find({ id: ctx.chat.id }).then(response => {
 
                         const currentCondition = response[0].device; // 0 = pc, 1 = laptop, 2 = iPhone X, 3 = iPhone 5/SE
                         const changeTo = (currentCondition == 3) ? 0 : (currentCondition < 3) ? currentCondition + 1 : 0;
 
-                        User.updateOne({ id: ctx.from.id }, { $set: { device: changeTo } }, () => {});
+                        User.updateOne({ id: ctx.chat.id }, { $set: { device: changeTo } }, () => {});
                         ctx.session.userData.device = changeTo;
         
                         ctx.editMessageText(ctx.i18n.t('service.settings_msg'), {

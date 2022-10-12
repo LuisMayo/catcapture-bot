@@ -10,7 +10,7 @@ module.exports = () => async (ctx) => {
 
         // Check if data is lost and if so - get it.
         if (ctx.session.userData == undefined) {
-            await User.find({ id: ctx.from.id }).then(response => {
+            await User.find({ id: ctx.chat.id }).then(response => {
                 ctx.session.userData = response[0];
             });
         }
@@ -20,18 +20,27 @@ module.exports = () => async (ctx) => {
 
         // Shortcut to reply on the user's message.
         const replyTo = { reply_to_message_id: ctx.update.message.message_id };
-
+        
+        // Match an url and fix it if needed.
+        const condition = (ctx.message.text > 32) ? ctx.message.text.slice(0, 64) + '...' : ctx.message.text;
+        if (ctx.message.entities == undefined) ctx.message.entities = [];
+        if (ctx.message.entities == undefined && ctx.chat.type === 'private') return ctx.replyWithHTML(ctx.i18n.t('error.invalid_url', { invalid_link: condition }), replyTo);
+        let url = ctx.message.entities.filter(e => e.type === 'url').map(e => e.url || ctx.message.text.slice(e.offset, (e.offset + e.length)));
+        if (url.length === 0) {
+            if (ctx.chat.type === 'private') {
+                return ctx.replyWithHTML(ctx.i18n.t('error.invalid_url', { invalid_link: condition }), replyTo);
+            } else {
+                return;
+            }
+        } else {
+            url = url[0];
+        }
+        if (!url.toString().match(/^http([s]?):\/\/.*/)) url = 'http://' + url.toString().match(/[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+/)[0];
         // Check if the user floods.
-        let checkUser = cooldown(ctx.from.id);
+        let checkUser = cooldown(ctx.chat.id);
         if (checkUser.banned) return ctx.replyWithMarkdown(ctx.i18n.t('service.banned', { hour: convertToHours(config.ban) }), replyTo);
         if (checkUser.cooldown) return ctx.replyWithMarkdown(ctx.i18n.t('service.is_on_cooldown'), replyTo);
 
-        // Match an url and fix it if needed.
-        const condition = (ctx.message.text > 32) ? ctx.message.text.slice(0, 64) + '...' : ctx.message.text;
-        if (ctx.message.entities == undefined) return ctx.replyWithHTML(ctx.i18n.t('error.invalid_url', { invalid_link: condition }), replyTo);
-        let url = ctx.message.entities.filter(e => e.type === 'url').map(e => e.url || ctx.message.text.slice(e.offset, (e.offset + e.length)));
-        if (url.length >= 1) url = url[0];
-        if (!url.toString().match(/^http([s]?):\/\/.*/)) url = 'http://' + url.toString().match(/[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+/)[0];
 
         // Match a user preferences.
         const device = ctx.session.userData.device;
@@ -46,7 +55,7 @@ module.exports = () => async (ctx) => {
         (sendPhoto) ? ctx.replyWithChatAction('upload_photo') : ctx.replyWithChatAction('upload_document');
 
         // Log what url was requested.
-        console.log(`${ctx.from.id}: requested ${url} website.`);
+        console.log(`${ctx.chat.id}: requested ${url} website.`);
 
         // Get an image.
         webeye.getScreenshot(url).then(async response => {

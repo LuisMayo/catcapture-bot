@@ -9,7 +9,7 @@ module.exports = () => async (ctx) => {
         ctx.session.userData.language = language;
 
         // Update source language and edit message.
-        await User.updateOne({ id: ctx.from.id }, { $set: { language: language } }, () => {
+        await User.updateOne({ id: ctx.chat.id }, { $set: { language: language } }, () => {
 
             ctx.deleteMessage();
 

@@ -5,9 +5,9 @@ module.exports = () => async (ctx) => {
 
     try {
 
-        if (ctx.from.id != config.admin) return;
+        if (ctx.chat.id != config.admin) return;
 
-        await User.deleteOne({ id: ctx.from.id });
+        await User.deleteOne({ id: ctx.chat.id });
         ctx.session.userData = undefined;
 
         ctx.reply('/start', { reply_markup: { remove_keyboard: true } });
