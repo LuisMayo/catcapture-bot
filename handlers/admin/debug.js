@@ -15,7 +15,7 @@ module.exports = () => async (ctx) => {
 
     try {
 
-        if (ctx.from.id != config.admin) return;
+        if (ctx.chat.id != config.admin) return;
 
         const usersNumber = await User.find().then(response => response.length);
         const dbConnectionStatus = connection[mongoose.connection.readyState];
